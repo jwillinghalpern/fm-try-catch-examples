@@ -47,5 +47,3 @@ If [ $autoCommitWasOn ]
     Set Auto-Commit[On]
 End If
 
-
-Exit Script [ "" ]
