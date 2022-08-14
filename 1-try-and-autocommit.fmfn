@@ -8,6 +8,8 @@ Try
     If [ IsEmpty ( $customerID ) ]
         Throw Error [ Code: 3 ; Message: "Customer ID is empty." ]
     End If
+    // or... a single-line version could look like this:
+    // Throw Error If [ Condition: IsEmpty ( $customerID ) ; ErrorCode: 3 ; ErrorMessage: "Customer ID is empty." ]
 
     // Create invoice
     Go to Layout [ "Invoice " ]
