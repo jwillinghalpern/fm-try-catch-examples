@@ -5,66 +5,66 @@ Set Variable [ $customerID ; "Customer123" ]
 Set Variable [ $productIDs ; List ( "Product1" ; "Product2" ) ]
 
 Loop
-  // Business logic error
-  Exit Loop If [ IsEmpty ( $customerID ) ; Let ( $error = Error.App ( 3 ; "Missing customerID " ) ; True ) ]
-    
-  // Create invoice
-  Set Variable [ $section ; "Create invoice" ]
-  Go to Layout [ "Invoice " ]
-  Exit Loop If [ If ( Get(LastError) ; Let ( $error = Error.Last ( "Go to Layout: Invoice" ) ) ) ]
-  New Record
-  Exit Loop If [ If ( Get(LastError) ; Let ( $error = Error.Last ( "New Record" ) ) ) ]
-  Set Field [ Invoice::date ; Get(CurrentDate) ]
-  Exit Loop If [ If ( Get(LastError) ; Let ( $error = Error.Last ( "Set Field: date" ) ) ) ]
-  Set Field [ Invoice::customerID ; $customerID ]
-  Exit Loop If [ If ( Get(LastError) ; Let ( $error = Error.Last ( "Set Field: customerID" ) ) ) ]
-  Set Variable [ $invoiceID ; Invoice::id ]
-
-  // Create related line items
-  Set Variable [ $section ; "Create line items" ]
-  Go To Layout [ "LineItem" ] // error will exit `Try` (e.g. trigger cancel, bad layoutname)
-  Exit Loop If [ If ( Get(LastError) ; Let ( $error = Error.Last ( "Set Field: LineItem" ) ) ) ]
-  Set Variable [ $i ; 0 ]
-  Loop
-    Exit Loop If [ Let ( $i = $i + 1 ; $i > ValueCount ( $productIDs ) ) ]
+    // Business logic error
+    Exit Loop If [ IsEmpty ( $customerID ) ; Let ( $error = Error.App ( 3 ; "Missing customerID " ) ; True ) ]
+        
+    // Create invoice
+    Set Variable [ $section ; "Create invoice" ]
+    Go to Layout [ "Invoice " ]
+    Exit Loop If [ If ( Get(LastError) ; Let ( $error = Error.Last ( "Go to Layout: Invoice" ) ) ) ]
     New Record
     Exit Loop If [ If ( Get(LastError) ; Let ( $error = Error.Last ( "New Record" ) ) ) ]
-    Set Field [ LineItem::invoiceID ; $invoiceID ]
+    Set Field [ Invoice::date ; Get(CurrentDate) ]
+    Exit Loop If [ If ( Get(LastError) ; Let ( $error = Error.Last ( "Set Field: date" ) ) ) ]
+    Set Field [ Invoice::customerID ; $customerID ]
+    Exit Loop If [ If ( Get(LastError) ; Let ( $error = Error.Last ( "Set Field: customerID" ) ) ) ]
+    Set Variable [ $invoiceID ; Invoice::id ]
+
+    // Create related line items
+    Set Variable [ $section ; "Create line items" ]
+    Go To Layout [ "LineItem" ] // error will exit `Try` (e.g. trigger cancel, bad layoutname)
+    Exit Loop If [ If ( Get(LastError) ; Let ( $error = Error.Last ( "Set Field: LineItem" ) ) ) ]
+    Set Variable [ $i ; 0 ]
+    Loop
+        Exit Loop If [ Let ( $i = $i + 1 ; $i > ValueCount ( $productIDs ) ) ]
+        New Record
+        Exit Loop If [ If ( Get(LastError) ; Let ( $error = Error.Last ( "New Record" ) ) ) ]
+        Set Field [ LineItem::invoiceID ; $invoiceID ]
+        Exit Loop If [ If ( Get(LastError) ; Let ( $error = Error.Last ( "Set Field: invoiceID" ) ) ) ]
+        Set Field [ LineItem::productID ; GetValue ( $productIDs ; $i ) ]
+        Exit Loop If [ If ( Get(LastError) ; Let ( $error = Error.Last ( "Set Field: productID" ) ) ) ]
+    End Loop
+    Exit Loop If [ Error.IsError ( $error ) ]
+
+    // Create related email
+    Set Variable [ $section ; "Create email" ]
+    Go To Layout [ "Email" ]
+    Exit Loop If [ If ( Get(LastError) ; Let ( $error = Error.Last ( "Go to Layout: Email" ) ) ) ]
+    New Record
+    Exit Loop If [ If ( Get(LastError) ; Let ( $error = Error.Last ( "New Record" ) ) ) ]
+    Set Field [ Email::invoiceID ; $invoiceID ]
     Exit Loop If [ If ( Get(LastError) ; Let ( $error = Error.Last ( "Set Field: invoiceID" ) ) ) ]
-    Set Field [ LineItem::productID ; GetValue ( $productIDs ; $i ) ]
-    Exit Loop If [ If ( Get(LastError) ; Let ( $error = Error.Last ( "Set Field: productID" ) ) ) ]
-  End Loop
-  Exit Loop If [ Error.IsError ( $error ) ]
+    Set Field [ Email::customerID ; $customerID ]
+    Exit Loop If [ If ( Get(LastError) ; Let ( $error = Error.Last ( "Set Field: customerID" ) ) ) ]
+    Set Field [ Email::title ; "Order Confirmation" ]
+    Exit Loop If [ If ( Get(LastError) ; Let ( $error = Error.Last ( "Set Field: title" ) ) ) ]
+    Set Field [ Email::body ; "Thanks for your order!" ]
+    Exit Loop If [ If ( Get(LastError) ; Let ( $error = Error.Last ( "Set Field: body" ) ) ) ]
 
-  // Create related email
-  Set Variable [ $section ; "Create email" ]
-  Go To Layout [ "Email" ]
-  Exit Loop If [ If ( Get(LastError) ; Let ( $error = Error.Last ( "Go to Layout: Email" ) ) ) ]
-  New Record
-  Exit Loop If [ If ( Get(LastError) ; Let ( $error = Error.Last ( "New Record" ) ) ) ]
-  Set Field [ Email::invoiceID ; $invoiceID ]
-  Exit Loop If [ If ( Get(LastError) ; Let ( $error = Error.Last ( "Set Field: invoiceID" ) ) ) ]
-  Set Field [ Email::customerID ; $customerID ]
-  Exit Loop If [ If ( Get(LastError) ; Let ( $error = Error.Last ( "Set Field: customerID" ) ) ) ]
-  Set Field [ Email::title ; "Order Confirmation" ]
-  Exit Loop If [ If ( Get(LastError) ; Let ( $error = Error.Last ( "Set Field: title" ) ) ) ]
-  Set Field [ Email::body ; "Thanks for your order!" ]
-  Exit Loop If [ If ( Get(LastError) ; Let ( $error = Error.Last ( "Set Field: body" ) ) ) ]
+    Commit Record
+    Exit Loop If [ If ( Get(LastError) ; Let ( $error = Error.Last ( "Commit Record" ) ) ) ]
 
-  Commit Record
-  Exit Loop If [ If ( Get(LastError) ; Let ( $error = Error.Last ( "Commit Record" ) ) ) ]
-
-  Exit Loop If [ True ]
+    Exit Loop If [ True ]
 End Loop
 
 // Handle error
 If [ Error.IsError ( $error ) ]
-  Revert Record
-  Go To Layout [ original ]
-  Set Variable [ $code ; JSONGetElement ( $error ; "code" ) ]
-  Set Variable [ $message ; JSONGetElement ( $error ; "message" ) ]
-  // line # not possible, so using $section to help narrow down error origin
-  Show Custom Dialog [ Title: "Error" ; Message: "Error " & $code & " in section : " & $section & ": " & $message ]
+    Revert Record
+    Go To Layout [ original ]
+    Set Variable [ $code ; JSONGetElement ( $error ; "code" ) ]
+    Set Variable [ $message ; JSONGetElement ( $error ; "message" ) ]
+    // line # not possible, so using $section to help narrow down error origin
+    Show Custom Dialog [ Title: "Error" ; Message: "Error " & $code & " in section : " & $section & ": " & $message ]
 End If
 
 Go To Layout [ original ]

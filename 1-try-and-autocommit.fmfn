@@ -4,47 +4,47 @@ Set Variable [ $customerID ; "Customer123" ]
 Set Variable [ $productIDs ; List ( "Product1" ; "Product2" ) ]
 
 Try
-  // Business logic error
-  If [ IsEmpty ( $customerID ) ]
-    Throw Error [ Code: 3 ; Message: "Customer ID is empty." ]
-  End If
+    // Business logic error
+    If [ IsEmpty ( $customerID ) ]
+        Throw Error [ Code: 3 ; Message: "Customer ID is empty." ]
+    End If
 
-  // Create invoice
-  Go to Layout [ "Invoice " ]
-  New Record
-  Set Field [ Invoice::date ; Get(CurrentDate) ]
-  Set Field [ Invoice::customerID ; $customerID ]
-  Set Variable [ $invoiceID ; Invoice::id ]
-
-  // Create related line items
-  Go To Layout [ "LineItem" ] // error will exit `Try` (e.g. trigger cancel, bad layoutname)
-  Set Variable [ $i ; 0 ]
-  Loop
-    Exit Loop If [ Let ( $i = $i + 1 ; $i > ValueCount ( $productIDs ) ) ]
+    // Create invoice
+    Go to Layout [ "Invoice " ]
     New Record
-    Set Field [ LineItem::invoiceID ; $invoiceID ]
-    Set Field [ LineItem::productID ; GetValue ( $productIDs ; $i ) ]
-  End Loop
+    Set Field [ Invoice::date ; Get(CurrentDate) ]
+    Set Field [ Invoice::customerID ; $customerID ]
+    Set Variable [ $invoiceID ; Invoice::id ]
 
-  // Create related email
-  Go To Layout [ "Email" ]
-  New Record
-  Set Field [ Email::invoiceID ; $invoiceID ]
-  Set Field [ Email::customerID ; $customerID ]
-  Set Field [ Email::title ; "Order Confirmation" ]
-  Set Field [ Email::body ; "Thanks for your order!" ]
+    // Create related line items
+    Go To Layout [ "LineItem" ] // error will exit `Try` (e.g. trigger cancel, bad layoutname)
+    Set Variable [ $i ; 0 ]
+    Loop
+        Exit Loop If [ Let ( $i = $i + 1 ; $i > ValueCount ( $productIDs ) ) ]
+        New Record
+        Set Field [ LineItem::invoiceID ; $invoiceID ]
+        Set Field [ LineItem::productID ; GetValue ( $productIDs ; $i ) ]
+    End Loop
 
-  Commit Record
+    // Create related email
+    Go To Layout [ "Email" ]
+    New Record
+    Set Field [ Email::invoiceID ; $invoiceID ]
+    Set Field [ Email::customerID ; $customerID ]
+    Set Field [ Email::title ; "Order Confirmation" ]
+    Set Field [ Email::body ; "Thanks for your order!" ]
+
+    Commit Record
 
 // (Catch optional. You can opt not to handle the error here, and handle later, e.g. in a parent script)
 // We could actually elimintate Catch altogether and just handle errors in Get(ErrorInfo) outside of the Try block
 Catch 
-  Revert Record
-  Go To Layout [ original ]
-  Set Variable [ $code ; JSONGetElement ( Get(ErrorInfo) ; "code" ) ]
-  Set Variable [ $message ; JSONGetElement ( Get(ErrorInfo) ; "message" ) ]
-  Set Variable [ $lineNum ; JSONGetElement ( Get(ErrorInfo) ; "lineNumber" ) ]
-  Show Custom Dialog [ Title: "Error" ; Message: "Error " & $code & " on line: " & $lineNum & ": " & $message ]
+    Revert Record
+    Go To Layout [ original ]
+    Set Variable [ $code ; JSONGetElement ( Get(ErrorInfo) ; "code" ) ]
+    Set Variable [ $message ; JSONGetElement ( Get(ErrorInfo) ; "message" ) ]
+    Set Variable [ $lineNum ; JSONGetElement ( Get(ErrorInfo) ; "lineNumber" ) ]
+    Show Custom Dialog [ Title: "Error" ; Message: "Error " & $code & " on line: " & $lineNum & ": " & $message ]
 End Try
 
 Go To Layout [ original ]

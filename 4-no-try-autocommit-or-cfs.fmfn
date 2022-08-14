@@ -3,76 +3,76 @@ Set Variable [ $customerID ; "Customer123" ]
 Set Variable [ $productIDs ; List ( "Product1" ; "Product2" ) ]
 
 Loop
-  // Business logic error
-  Exit Loop If [ If ( IsEmpty ( $customerID ) ; Let ( $error = JSONSetElement ( "{}" ; [ "error.type" ; "app" ; JSONString ] ; [ "error.code" ; 3 ; JSONString ] ; [ "error.message" ; "Missing customerID" ; JSONString ] ) ) ) ]
+    // Business logic error
+    Exit Loop If [ If ( IsEmpty ( $customerID ) ; Let ( $error = JSONSetElement ( "{}" ; [ "error.type" ; "app" ; JSONString ] ; [ "error.code" ; 3 ; JSONString ] ; [ "error.message" ; "Missing customerID" ; JSONString ] ) ) ) ]
 
-  // Start Transaction
-  Set Variable [ $section ; "Start Transaction" ]
-  Go to Layout [ "DBTransaction" ]
-  New Record
-  Exit Loop If [ If ( Get(LastError) ; Let ( $error = JSONSetElement ( "{}" ; [ "error.code" ; Get(LastError) ; JSONString ] ; [ "error.message" ; "New Record" ; JSONString ] ) ) ) ]
-  Commit Record
-  Exit Loop If [ If ( Get(LastError) ; Let ( $error = JSONSetElement ( "{}" ; [ "error.code" ; Get(LastError) ; JSONString ] ; [ "error.message" ; "Commit Record" ; JSONString ] ) ) ) ]
-  Open Record
-  Exit Loop If [ If ( Get(LastError) ; Let ( $error = JSONSetElement ( "{}" ; [ "error.code" ; Get(LastError) ; JSONString ] ; [ "error.message" ; "Open Record" ; JSONString ] ) ) ) ]
+    // Start Transaction
+    Set Variable [ $section ; "Start Transaction" ]
+    Go to Layout [ "DBTransaction" ]
+    New Record
+    Exit Loop If [ If ( Get(LastError) ; Let ( $error = JSONSetElement ( "{}" ; [ "error.code" ; Get(LastError) ; JSONString ] ; [ "error.message" ; "New Record" ; JSONString ] ) ) ) ]
+    Commit Record
+    Exit Loop If [ If ( Get(LastError) ; Let ( $error = JSONSetElement ( "{}" ; [ "error.code" ; Get(LastError) ; JSONString ] ; [ "error.message" ; "Commit Record" ; JSONString ] ) ) ) ]
+    Open Record
+    Exit Loop If [ If ( Get(LastError) ; Let ( $error = JSONSetElement ( "{}" ; [ "error.code" ; Get(LastError) ; JSONString ] ; [ "error.message" ; "Open Record" ; JSONString ] ) ) ) ]
 
-  // Create invoice
-  Set Variable [ $section ; "Create invoice" ]
-  Set Field [ DBTransaction::invoiceID ; "" ]
-  Exit Loop If [ If ( Get(LastError) ; Let ( $error = JSONSetElement ( "{}" ; [ "error.code" ; Get(LastError) ; JSONString ] ; [ "error.message" ; "Set Field: DBTransaction::invoiceID" ; JSONString ] ) ) ) ]
-  Set Field [ DBTransaction::xJoin ; "" ]
-  Exit Loop If [ If ( Get(LastError) ; Let ( $error = JSONSetElement ( "{}" ; [ "error.code" ; Get(LastError) ; JSONString ] ; [ "error.message" ; "Set Field: DBTransaction::xJoin" ; JSONString ] ) ) ) ]
-  Set Field [ DBT_Invoice::date ; Get(CurrentDate) ]
-  Exit Loop If [ If ( Get(LastError) ; Let ( $error = JSONSetElement ( "{}" ; [ "error.code" ; Get(LastError) ; JSONString ] ; [ "error.message" ; "Set Field: date" ; JSONString ] ) ) ) ]
-  Set Field [ DBT_Invoice::customerID ; $customerID ]
-  Exit Loop If [ If ( Get(LastError) ; Let ( $error = JSONSetElement ( "{}" ; [ "error.code" ; Get(LastError) ; JSONString ] ; [ "error.message" ; "Set Field: customerID" ; JSONString ] ) ) ) ]
-  Set Variable [ $invoiceID ; Invoice::id ]
-
-  // Create related line items
-  Set Variable [ $section ; "Create line items" ]
-  Set Variable [ $i ; 0 ]
-  Loop
-    Exit Loop If [ Let ( $i = $i + 1 ; $i > ValueCount ( $productIDs ) ) ]
-    Set Field [ DBTransaction::lineItemID ; "" ]
-    Exit Loop If [ If ( Get(LastError) ; Let ( $error = JSONSetElement ( "{}" ; [ "error.code" ; Get(LastError) ; JSONString ] ; [ "error.message" ; "Set Field: DBTransaction::lineItemID" ; JSONString ] ) ) ) ]
+    // Create invoice
+    Set Variable [ $section ; "Create invoice" ]
+    Set Field [ DBTransaction::invoiceID ; "" ]
+    Exit Loop If [ If ( Get(LastError) ; Let ( $error = JSONSetElement ( "{}" ; [ "error.code" ; Get(LastError) ; JSONString ] ; [ "error.message" ; "Set Field: DBTransaction::invoiceID" ; JSONString ] ) ) ) ]
     Set Field [ DBTransaction::xJoin ; "" ]
     Exit Loop If [ If ( Get(LastError) ; Let ( $error = JSONSetElement ( "{}" ; [ "error.code" ; Get(LastError) ; JSONString ] ; [ "error.message" ; "Set Field: DBTransaction::xJoin" ; JSONString ] ) ) ) ]
-    Set Field [ DBT_LineItem::invoiceID ; $invoiceID ]
+    Set Field [ DBT_Invoice::date ; Get(CurrentDate) ]
+    Exit Loop If [ If ( Get(LastError) ; Let ( $error = JSONSetElement ( "{}" ; [ "error.code" ; Get(LastError) ; JSONString ] ; [ "error.message" ; "Set Field: date" ; JSONString ] ) ) ) ]
+    Set Field [ DBT_Invoice::customerID ; $customerID ]
+    Exit Loop If [ If ( Get(LastError) ; Let ( $error = JSONSetElement ( "{}" ; [ "error.code" ; Get(LastError) ; JSONString ] ; [ "error.message" ; "Set Field: customerID" ; JSONString ] ) ) ) ]
+    Set Variable [ $invoiceID ; Invoice::id ]
+
+    // Create related line items
+    Set Variable [ $section ; "Create line items" ]
+    Set Variable [ $i ; 0 ]
+    Loop
+        Exit Loop If [ Let ( $i = $i + 1 ; $i > ValueCount ( $productIDs ) ) ]
+        Set Field [ DBTransaction::lineItemID ; "" ]
+        Exit Loop If [ If ( Get(LastError) ; Let ( $error = JSONSetElement ( "{}" ; [ "error.code" ; Get(LastError) ; JSONString ] ; [ "error.message" ; "Set Field: DBTransaction::lineItemID" ; JSONString ] ) ) ) ]
+        Set Field [ DBTransaction::xJoin ; "" ]
+        Exit Loop If [ If ( Get(LastError) ; Let ( $error = JSONSetElement ( "{}" ; [ "error.code" ; Get(LastError) ; JSONString ] ; [ "error.message" ; "Set Field: DBTransaction::xJoin" ; JSONString ] ) ) ) ]
+        Set Field [ DBT_LineItem::invoiceID ; $invoiceID ]
+        Exit Loop If [ If ( Get(LastError) ; Let ( $error = JSONSetElement ( "{}" ; [ "error.code" ; Get(LastError) ; JSONString ] ; [ "error.message" ; "Set Field: invoiceID" ; JSONString ] ) ) ) ]
+        Set Field [ DBT_LineItem::productID ; GetValue ( $productIDs ; $i ) ]
+        Exit Loop If [ If ( Get(LastError) ; Let ( $error = JSONSetElement ( "{}" ; [ "error.code" ; Get(LastError) ; JSONString ] ; [ "error.message" ; "Set Field: productID" ; JSONString ] ) ) ) ]
+    End Loop
+    Exit Loop If [ not IsEmpty ( $error ) and JSONGetElement ( $error ; "code" ) ]
+
+    // Create related email
+    Set Variable [ $section ; "Create email" ]
+    Set Field [ DBTransaction::emailID ; "" ]
+    Exit Loop If [ If ( Get(LastError) ; Let ( $error = JSONSetElement ( "{}" ; [ "error.code" ; Get(LastError) ; JSONString ] ; [ "error.message" ; "Set Field: DBTransaction::emailID" ; JSONString ] ) ) ) ]
+    Set Field [ DBTransaction::xJoin ; "" ]
+    Exit Loop If [ If ( Get(LastError) ; Let ( $error = JSONSetElement ( "{}" ; [ "error.code" ; Get(LastError) ; JSONString ] ; [ "error.message" ; "Set Field: DBTransaction::xJoin" ; JSONString ] ) ) ) ]
+    Set Field [ DBT_Email::invoiceID ; $invoiceID ]
     Exit Loop If [ If ( Get(LastError) ; Let ( $error = JSONSetElement ( "{}" ; [ "error.code" ; Get(LastError) ; JSONString ] ; [ "error.message" ; "Set Field: invoiceID" ; JSONString ] ) ) ) ]
-    Set Field [ DBT_LineItem::productID ; GetValue ( $productIDs ; $i ) ]
-    Exit Loop If [ If ( Get(LastError) ; Let ( $error = JSONSetElement ( "{}" ; [ "error.code" ; Get(LastError) ; JSONString ] ; [ "error.message" ; "Set Field: productID" ; JSONString ] ) ) ) ]
-  End Loop
-  Exit Loop If [ not IsEmpty ( $error ) and JSONGetElement ( $error ; "code" ) ]
+    Set Field [ DBT_Email::customerID ; $customerID ]
+    Exit Loop If [ If ( Get(LastError) ; Let ( $error = JSONSetElement ( "{}" ; [ "error.code" ; Get(LastError) ; JSONString ] ; [ "error.message" ; "Set Field: customerID" ; JSONString ] ) ) ) ]
+    Set Field [ DBT_Email::title ; "Order Confirmation" ]
+    Exit Loop If [ If ( Get(LastError) ; Let ( $error = JSONSetElement ( "{}" ; [ "error.code" ; Get(LastError) ; JSONString ] ; [ "error.message" ; "Set Field: title" ; JSONString ] ) ) ) ]
+    Set Field [ DBT_Email::body ; "Thanks for your order!" ]
+    Exit Loop If [ If ( Get(LastError) ; Let ( $error = JSONSetElement ( "{}" ; [ "error.code" ; Get(LastError) ; JSONString ] ; [ "error.message" ; "Set Field: body" ; JSONString ] ) ) ) ]
 
-  // Create related email
-  Set Variable [ $section ; "Create email" ]
-  Set Field [ DBTransaction::emailID ; "" ]
-  Exit Loop If [ If ( Get(LastError) ; Let ( $error = JSONSetElement ( "{}" ; [ "error.code" ; Get(LastError) ; JSONString ] ; [ "error.message" ; "Set Field: DBTransaction::emailID" ; JSONString ] ) ) ) ]
-  Set Field [ DBTransaction::xJoin ; "" ]
-  Exit Loop If [ If ( Get(LastError) ; Let ( $error = JSONSetElement ( "{}" ; [ "error.code" ; Get(LastError) ; JSONString ] ; [ "error.message" ; "Set Field: DBTransaction::xJoin" ; JSONString ] ) ) ) ]
-  Set Field [ DBT_Email::invoiceID ; $invoiceID ]
-  Exit Loop If [ If ( Get(LastError) ; Let ( $error = JSONSetElement ( "{}" ; [ "error.code" ; Get(LastError) ; JSONString ] ; [ "error.message" ; "Set Field: invoiceID" ; JSONString ] ) ) ) ]
-  Set Field [ DBT_Email::customerID ; $customerID ]
-  Exit Loop If [ If ( Get(LastError) ; Let ( $error = JSONSetElement ( "{}" ; [ "error.code" ; Get(LastError) ; JSONString ] ; [ "error.message" ; "Set Field: customerID" ; JSONString ] ) ) ) ]
-  Set Field [ DBT_Email::title ; "Order Confirmation" ]
-  Exit Loop If [ If ( Get(LastError) ; Let ( $error = JSONSetElement ( "{}" ; [ "error.code" ; Get(LastError) ; JSONString ] ; [ "error.message" ; "Set Field: title" ; JSONString ] ) ) ) ]
-  Set Field [ DBT_Email::body ; "Thanks for your order!" ]
-  Exit Loop If [ If ( Get(LastError) ; Let ( $error = JSONSetElement ( "{}" ; [ "error.code" ; Get(LastError) ; JSONString ] ; [ "error.message" ; "Set Field: body" ; JSONString ] ) ) ) ]
+    Commit Record
+    Exit Loop If [ If ( Get(LastError) ; Let ( $error = JSONSetElement ( "{}" ; [ "error.code" ; Get(LastError) ; JSONString ] ; [ "error.message" ; "Commit Record" ; JSONString ] ) ) ) ]
 
-  Commit Record
-  Exit Loop If [ If ( Get(LastError) ; Let ( $error = JSONSetElement ( "{}" ; [ "error.code" ; Get(LastError) ; JSONString ] ; [ "error.message" ; "Commit Record" ; JSONString ] ) ) ) ]
-
-  Exit Loop If [ True ]
+    Exit Loop If [ True ]
 End Loop
 
 // Handle error
 If [ not IsEmpty ( $error ) and JSONGetElement ( $error ; "code" ) ]
-  Revert Record
-  Go To Layout [ original ]
-  Set Variable [ $code ; JSONGetElement ( $error ; "code" ) ]
-  Set Variable [ $message ; JSONGetElement ( $error ; "message" ) ]
-  // line # not possible, so use $section to help narrow down error origin
-  Show Custom Dialog [ Title: "Error" ; Message: "Error " & $code & " in section : " & $section & ": " & $message ]
+    Revert Record
+    Go To Layout [ original ]
+    Set Variable [ $code ; JSONGetElement ( $error ; "code" ) ]
+    Set Variable [ $message ; JSONGetElement ( $error ; "message" ) ]
+    // line # not possible, so use $section to help narrow down error origin
+    Show Custom Dialog [ Title: "Error" ; Message: "Error " & $code & " in section : " & $section & ": " & $message ]
 End If
 
 Go To Layout [ original ]
