@@ -4,6 +4,11 @@ Set Variable [ $customerID ; "Customer123" ]
 Set Variable [ $productIDs ; List ( "Product1" ; "Product2" ) ]
 
 Try
+  // Business logic error
+  If [ IsEmpty ( $customerID ) ]
+    Throw Error [ Code: 3 ; Message: "Customer ID is empty." ]
+  End If
+
   // Create invoice
   Go to Layout [ "Invoice " ]
   New Record

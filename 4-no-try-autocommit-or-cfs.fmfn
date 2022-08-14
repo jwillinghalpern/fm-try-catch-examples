@@ -2,6 +2,9 @@ Set Variable [ $customerID ; "Customer123" ]
 Set Variable [ $productIDs ; List ( "Product1" ; "Product2" ) ]
 
 Loop
+  // Business logic error
+  Exit Loop If [ If ( IsEmpty ( $customerID ) ; Let ( $error = JSONSetElement ( "{}" ; [ "error.type" ; "app" ; JSONString ] ; [ "error.code" ; 3 ; JSONString ] ; [ "error.message" ; "Missing customerID" ; JSONString ] ) ) ) ]
+
   // Start Transaction
   Set Variable [ $section ; "Start Transaction" ]
   Go to Layout [ "DBTransaction" ]

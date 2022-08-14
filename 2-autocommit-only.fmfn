@@ -5,6 +5,9 @@ Set Variable [ $customerID ; "Customer123" ]
 Set Variable [ $productIDs ; List ( "Product1" ; "Product2" ) ]
 
 Loop
+  // Business logic error
+  Exit Loop If [ IsEmpty ( $customerID ) ; Let ( $error = Error.App ( 3 ; "Missing customerID " ) ; True ) ]
+  
   // Create invoice
   Set Variable [ $section ; "Create invoice" ]
   Go to Layout [ "Invoice " ]

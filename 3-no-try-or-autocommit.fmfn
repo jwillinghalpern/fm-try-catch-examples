@@ -3,6 +3,9 @@ Set Variable [ $customerID ; "Customer123" ]
 Set Variable [ $productIDs ; List ( "Product1" ; "Product2" ) ]
 
 Loop
+  // Business logic error
+  Exit Loop If [ IsEmpty ( $customerID ) ; Let ( $error = Error.App ( 3 ; "Missing customerID " ) ; True ) ]
+
   // Start Transaction (Transactions must be done through relationships, so this uses a SELECTOR technique)
   Set Variable [ $section ; "Start Transaction" ]
   Go to Layout [ "DBTransaction" ]
