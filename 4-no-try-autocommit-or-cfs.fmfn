@@ -5,7 +5,6 @@ Loop
   // Start Transaction
   Set Variable [ $section ; "Start Transaction" ]
   Go to Layout [ "DBTransaction" ]
-  Exit Loop If [ If ( Get(LastError) ; Let ( $error = JSONSetElement ( "{}" ; [ "error.code" ; Get(LastError) ; JSONString ] ; [ "error.message" ; "Go to Layout: DBTransaction" ; JSONString ] ) ) ) ]
   New Record
   Exit Loop If [ If ( Get(LastError) ; Let ( $error = JSONSetElement ( "{}" ; [ "error.code" ; Get(LastError) ; JSONString ] ; [ "error.message" ; "New Record" ; JSONString ] ) ) ) ]
   Commit Record
