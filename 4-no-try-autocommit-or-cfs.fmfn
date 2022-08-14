@@ -1,3 +1,4 @@
+// this example uses no CFs, and demonstrates what a fully error-aware and transaction-safe script looks like
 Set Variable [ $customerID ; "Customer123" ]
 Set Variable [ $productIDs ; List ( "Product1" ; "Product2" ) ]
 
