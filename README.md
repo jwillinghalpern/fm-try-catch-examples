@@ -4,4 +4,4 @@ These are some mockups showing the difference between how performing transaction
 
 ## Comparison
 
-![comparison](fm-today-vs-with-new-features)
+![comparison](./fm-today-vs-with-new-features.png)
