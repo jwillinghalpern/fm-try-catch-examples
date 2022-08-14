@@ -1,0 +1,76 @@
+// This example uses custom functions Error.Last(), Error.IsError(), and Error.App()
+Set Variable [ $customerID ; "Customer123" ]
+Set Variable [ $productIDs ; List ( "Product1" ; "Product2" ) ]
+
+Loop
+  // Start Transaction (Transactions must be done through relationships, so this uses a SELECTOR technique)
+  Set Variable [ $section ; "Start Transaction" ]
+  Go to Layout [ "DBTransaction" ]
+  Exit Loop If [ If ( Get(LastError) ; Let ( $error = Error.Last ( "Go to Layout: DBTransaction"  ) ) ) ]
+  New Record
+  Exit Loop If [ If ( Get(LastError) ; Let ( $error = Error.Last ( "New Record"  ) ) ) ]
+  Commit Record
+  Exit Loop If [ If ( Get(LastError) ; Let ( $error = Error.Last ( "Commit Record"  ) ) ) ]
+  Open Record
+  Exit Loop If [ If ( Get(LastError) ; Let ( $error = Error.Last ( "Open Record"  ) ) ) ]
+
+  // Create invoice
+  Set Variable [ $section ; "Create invoice" ]
+  Set Field [ DBTransaction::invoiceID ; "" ]
+  Exit Loop If [ If ( Get(LastError) ; Let ( $error = Error.Last ( "Set Field: DBTransaction::invoiceID"  ) ) ) ]
+  Set Field [ DBTransaction::xJoin ; "" ]
+  Exit Loop If [ If ( Get(LastError) ; Let ( $error = Error.Last ( "Set Field: DBTransaction::xJoin"  ) ) ) ]
+  Set Field [ DBT_Invoice::date ; Get(CurrentDate) ]
+  Exit Loop If [ If ( Get(LastError) ; Let ( $error = Error.Last ( "Set Field: date"  ) ) ) ]
+  Set Field [ DBT_Invoice::customerID ; $customerID ]
+  Exit Loop If [ If ( Get(LastError) ; Let ( $error = Error.Last ( "Set Field: customerID"  ) ) ) ]
+  Set Variable [ $invoiceID ; Invoice::id ]
+
+  // Create related line items
+  Set Variable [ $section ; "Create line items" ]
+  Set Variable [ $i ; 0 ]
+  Loop
+    Exit Loop If [ Let ( $i = $i + 1 ; $i > ValueCount ( $productIDs ) ) ]
+    Set Field [ DBTransaction::lineItemID ; "" ]
+    Exit Loop If [ If ( Get(LastError) ; Let ( $error = Error.Last ( "Set Field: DBTransaction::lineItemID"  ) ) ) ]
+    Set Field [ DBTransaction::xJoin ; "" ]
+    Exit Loop If [ If ( Get(LastError) ; Let ( $error = Error.Last ( "Set Field: DBTransaction::xJoin"  ) ) ) ]
+    Set Field [ DBT_LineItem::invoiceID ; $invoiceID ]
+    Exit Loop If [ If ( Get(LastError) ; Let ( $error = Error.Last ( "Set Field: invoiceID"  ) ) ) ]
+    Set Field [ DBT_LineItem::productID ; GetValue ( $productIDs ; $i ) ]
+    Exit Loop If [ If ( Get(LastError) ; Let ( $error = Error.Last ( "Set Field: productID"  ) ) ) ]
+  End Loop
+  Exit Loop If [ Error.IsError ( $error ) ]
+
+  // Create related email
+  Set Variable [ $section ; "Create email" ]
+  Set Field [ DBTransaction::emailID ; "" ]
+  Exit Loop If [ If ( Get(LastError) ; Let ( $error = Error.Last ( "Set Field: DBTransaction::emailID"  ) ) ) ]
+  Set Field [ DBTransaction::xJoin ; "" ]
+  Exit Loop If [ If ( Get(LastError) ; Let ( $error = Error.Last ( "Set Field: DBTransaction::xJoin"  ) ) ) ]
+  Set Field [ DBT_Email::invoiceID ; $invoiceID ]
+  Exit Loop If [ If ( Get(LastError) ; Let ( $error = Error.Last ( "Set Field: invoiceID"  ) ) ) ]
+  Set Field [ DBT_Email::customerID ; $customerID ]
+  Exit Loop If [ If ( Get(LastError) ; Let ( $error = Error.Last ( "Set Field: customerID"  ) ) ) ]
+  Set Field [ DBT_Email::title ; "Order Confirmation" ]
+  Exit Loop If [ If ( Get(LastError) ; Let ( $error = Error.Last ( "Set Field: title"  ) ) ) ]
+  Set Field [ DBT_Email::body ; "Thanks for your order!" ]
+  Exit Loop If [ If ( Get(LastError) ; Let ( $error = Error.Last ( "Set Field: body"  ) ) ) ]
+
+  Commit Record
+  Exit Loop If [ If ( Get(LastError) ; Let ( $error = Error.Last ( "Commit Record"  ) ) ) ]
+
+  Exit Loop If [ True ]
+End Loop
+
+// Handle error
+If [ Error.IsError ( $error ) ]
+  Revert Record
+  Go To Layout [ original ]
+  Set Variable [ $code ; JSONGetElement ( $error ; "code" ) ]
+  Set Variable [ $message ; JSONGetElement ( $error ; "message" ) ]
+  // line # not possible, so use $section to help narrow down error origin
+  Show Custom Dialog [ Title: "Error" ; Message: "Error " & $code & " in section : " & $section & ": " & $message ]
+End If
+
+Go To Layout [ original ]
