@@ -1,3 +1,4 @@
+// This example shows how two new features, `Try...Catch` and `Set Auto-commit [On/Off]` could simplify the code.
 Set Auto-Commit[Off]
 
 Set Variable [ $customerID ; "Customer123" ]

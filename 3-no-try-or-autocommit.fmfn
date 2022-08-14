@@ -1,3 +1,4 @@
+// This example demonstrates how we must currently perform database transactions and do error trapping in our scripts.
 // This example uses custom functions Error.Last(), Error.IsError(), and Error.App()
 Set Variable [ $customerID ; "Customer123" ]
 Set Variable [ $productIDs ; List ( "Product1" ; "Product2" ) ]

@@ -1,3 +1,4 @@
+// This example demonstrates the same thing as 3-no-try-or-autocommit.fmfn, but without the aid of Custom Functions for error handling. It's unrealistic, but demonstrates just how much code has to do this using only standard functions.
 // this example uses no CFs, and demonstrates what a fully error-aware and transaction-safe script looks like
 Set Variable [ $customerID ; "Customer123" ]
 Set Variable [ $productIDs ; List ( "Product1" ; "Product2" ) ]

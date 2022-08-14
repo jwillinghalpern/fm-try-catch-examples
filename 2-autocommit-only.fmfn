@@ -1,3 +1,4 @@
+// This example demonstrates a new feature idea `Set Auto-Commit[On/Off]` for performing transactions, but uses traditional FM error trapping techniques.
 // This example uses custom functions Error.Last(), Error.IsError(), and Error.App()
 Set Auto-Commit[Off]
 
